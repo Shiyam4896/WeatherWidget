@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Forecast</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .weather-container {
+      margin-top: 30px;
+      padding: 20px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      max-width: 300px;
+      margin: 0 auto;
+      background-color: #fff;
+    }
+
+    .weather-container h2 {
+      margin: 0;
+      font-size: 24px;
+      color: #333;
+    }
+
+    .weather-container p {
+      margin: 5px 0;
+      font-size: 16px;
+      color: #555;
+    }
+
+    .weather-container p#temperature {
+      font-weight: bold;
+    }
+
+    .weather-container p#uv {
+      color: #ff6600;
+    }
+
+    .weather-container p#sunrise,
+    .weather-container p#sunset {
+      font-style: italic;
+      color: #888;
+    }
+  </style>
+
+</head>
+
+<body>
+  <h1>Weather Forecast</h1>
+
+  <div class="weather-container">
+    <h2 id="city">London</h2>
+    <p id="temperature">Temperature</p>
+    <p id="uv">UV</p>
+    <p id="sunrise">Sunrise</p>
+    <p id="sunset">Sunset</p>
+  </div>
+
+  <script>
+    fetch('https://api.weatherapi.com/v1/forecast.json?key=f80779fb373345eb8f194813231707&q=London&days=1&aqi=yes&alerts=yes')
+      .then(res => res.json())
+      .then(jsonResult => {
+        const temperatureElement = document.getElementById('temperature');
+        temperatureElement.innerText = `Temperature: ${jsonResult.current.temp_c}°C`;
+
+        const uvElement = document.getElementById('uv');
+        uvElement.innerText = `UV: ${jsonResult.current.uv}`;
+
+        fetch('https://api.weatherapi.com/v1/forecast.xml?key=f80779fb373345eb8f194813231707&q=London&days=1&aqi=yes&alerts=yes')
+          .then(res => res.text())
+          .then(xmlString => {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+            const astronomyElement = xmlDoc.querySelector('astro');
+            const sunriseElement = document.getElementById('sunrise');
+            const sunsetElement = document.getElementById('sunset');
+
+            sunriseElement.innerText = `Sunrise: ${astronomyElement.querySelector('sunrise').textContent}`;
+            sunsetElement.innerText = `Sunset: ${astronomyElement.querySelector('sunset').textContent}`;
+          });
+      });
+  </script>
+
+</body>
+</html>
