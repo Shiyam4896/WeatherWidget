@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -53,6 +54,15 @@
       font-style: italic;
       color: #888;
     }
+    .historical-weather-container {
+      margin-top: 30px;
+      padding: 20px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      max-width: 300px;
+      margin: 0 auto;
+      background-color: #fff;
+    }
   </style>
 
 </head>
@@ -61,37 +71,93 @@
   <h1>Weather Forecast</h1>
 
   <div class="weather-container">
-    <h2 id="city">London</h2>
+    <h2 id="city">Chennai</h2>
     <p id="temperature">Temperature</p>
     <p id="uv">UV</p>
     <p id="sunrise">Sunrise</p>
     <p id="sunset">Sunset</p>
   </div>
 
+  
+  <div class="historical-weather-container">
+    <h2> Weather History</h2>
+    <p id="last-viewed-temperature">Last Checked Temperature</p>
+    <p id="last-viewed-uv">Last Checked UV</p>
+    <p id="last-viewed-sunrise">Last Checked Sunrise</p>
+    <p id="last-viewed-sunset">Last Checked Sunset</p>
+  </div>
+
   <script>
-    fetch('https://api.weatherapi.com/v1/forecast.json?key=f80779fb373345eb8f194813231707&q=London&days=1&aqi=yes&alerts=yes')
+
+    fetch('https://api.weatherapi.com/v1/forecast.json?key=f80779fb373345eb8f194813231707&q=Chennai&days=1&aqi=yes&alerts=yes')
       .then(res => res.json())
       .then(jsonResult => {
-        const temperatureElement = document.getElementById('temperature');
-        temperatureElement.innerText = `Temperature: ${jsonResult.current.temp_c}°C`;
-
-        const uvElement = document.getElementById('uv');
-        uvElement.innerText = `UV: ${jsonResult.current.uv}`;
-
-        fetch('https://api.weatherapi.com/v1/forecast.xml?key=f80779fb373345eb8f194813231707&q=London&days=1&aqi=yes&alerts=yes')
+        fetch('https://api.weatherapi.com/v1/forecast.xml?key=f80779fb373345eb8f194813231707&q=Chennai&days=1&aqi=yes&alerts=yes')
           .then(res => res.text())
           .then(xmlString => {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-            const astronomyElement = xmlDoc.querySelector('astro');
-            const sunriseElement = document.getElementById('sunrise');
-            const sunsetElement = document.getElementById('sunset');
-
-            sunriseElement.innerText = `Sunrise: ${astronomyElement.querySelector('sunrise').textContent}`;
-            sunsetElement.innerText = `Sunset: ${astronomyElement.querySelector('sunset').textContent}`;
+            updateWeatherData(jsonResult, xmlString);
+            getHistoricalWeatherData();
           });
+      })
+      .catch(error => {
+        console.error('Error fetching weather data:', error);
       });
+
+    const temperatureElement = document.getElementById('temperature');
+    const uvElement = document.getElementById('uv');
+    const sunriseElement = document.getElementById('sunrise');
+    const sunsetElement = document.getElementById('sunset');
+
+   
+    function updateWeatherData(jsonResult, xmlString) {
+      const currentTemperatureC = jsonResult.current.temp_c;
+      const currentUV = jsonResult.current.uv;
+
+      temperatureElement.innerText = `Temperature: ${currentTemperatureC}°C`;
+      uvElement.innerText = `UV: ${currentUV}`;
+
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+      const astronomyElement = xmlDoc.querySelector('astro');
+      const currentSunrise = astronomyElement.querySelector('sunrise').textContent;
+      const currentSunset = astronomyElement.querySelector('sunset').textContent;
+
+      sunriseElement.innerText = `Sunrise: ${currentSunrise}`;
+      sunsetElement.innerText = `Sunset: ${currentSunset}`;
+
+      
+      localStorage.setItem('lastViewedTemperature', currentTemperatureC);
+      localStorage.setItem('lastViewedUV', currentUV);
+      localStorage.setItem('lastViewedSunrise', currentSunrise);
+      localStorage.setItem('lastViewedSunset', currentSunset);
+    }
+
+    
+    function getHistoricalWeatherData() {
+      const lastViewedTemperature = localStorage.getItem('lastViewedTemperature');
+      if (lastViewedTemperature) {
+        document.getElementById('last-viewed-temperature').innerText = `Last Checked Temperature: ${lastViewedTemperature}°C`;
+      }
+
+      const lastViewedUV = localStorage.getItem('lastViewedUV');
+      if (lastViewedUV) {
+        document.getElementById('last-viewed-uv').innerText = `Last Checked UV: ${lastViewedUV}`;
+      }
+
+      const lastViewedSunrise = localStorage.getItem('lastViewedSunrise');
+      if (lastViewedSunrise) {
+        document.getElementById('last-viewed-sunrise').innerText = `Last Checked Sunrise: ${lastViewedSunrise}`;
+      }
+
+      const lastViewedSunset = localStorage.getItem('lastViewedSunset');
+      if (lastViewedSunset) {
+        document.getElementById('last-viewed-sunset').innerText = `Last Checked Sunset: ${lastViewedSunset}`;
+      }
+    }
+
+    
   </script>
 
 </body>
+
 </html>
