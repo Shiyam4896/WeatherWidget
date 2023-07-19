@@ -11,7 +11,6 @@
       font-family: Arial, sans-serif;
       text-align: center;
       background-color: #f5f5f5;
-      background-image: url("assets/background3.jpg"); 
       background-size: cover;
       background-position: center;
       margin: 0;
@@ -149,107 +148,107 @@
   <script>
     var weatherWidget = weatherWidget || {};
 
-    weatherWidget.init = function()
-    {
-      weatherWidget.domElementNames = weatherWidget.domElementNames || {};
-      weatherWidget.namedDomedElements = weatherWidget.namedDomedElements || {};
-      weatherWidget.domElementNames.CurrentTemperature = 'temperature';
-      weatherWidget.domElementNames.CurrentUV = 'uv';
-      weatherWidget.domElementNames.CurrentSunRise = 'sunrise';
-      weatherWidget.domElementNames.CurrentSunSet = 'sunset';
-      weatherWidget.namedDomedElements.temperatureElement = document.getElementById(weatherWidget.domElementNames.CurrentTemperature);
-      weatherWidget.namedDomedElements.uvElement = document.getElementById(weatherWidget.domElementNames.CurrentUV);
-      weatherWidget.namedDomedElements.sunriseElement = document.getElementById(weatherWidget.domElementNames.CurrentSunRise);
-      weatherWidget.namedDomedElements.sunsetElement = document.getElementById(weatherWidget.domElementNames.CurrentSunSet);
+    weatherWidget.init = function () {
+        weatherWidget.domElementNames = weatherWidget.domElementNames || {};
+        weatherWidget.namedDomedElements = weatherWidget.namedDomedElements || {};
+        weatherWidget.domElementNames.CurrentTemperature = 'temperature';
+        weatherWidget.domElementNames.CurrentUV = 'uv';
+        weatherWidget.domElementNames.CurrentSunRise = 'sunrise';
+        weatherWidget.domElementNames.CurrentSunSet = 'sunset';
+        weatherWidget.namedDomedElements.temperatureElement = document.getElementById(weatherWidget.domElementNames.CurrentTemperature);
+        weatherWidget.namedDomedElements.uvElement = document.getElementById(weatherWidget.domElementNames.CurrentUV);
+        weatherWidget.namedDomedElements.sunriseElement = document.getElementById(weatherWidget.domElementNames.CurrentSunRise);
+        weatherWidget.namedDomedElements.sunsetElement = document.getElementById(weatherWidget.domElementNames.CurrentSunSet);
     };
 
     function caesarCipherEncrypt(text, shift) {
-    let result = "";
-    for (let i = 0; i < text.length; i++) {
-    let char = text[i];
-    if (char.match(/[a-z]/i)) {
-      let code = text.charCodeAt(i);
-      if (code >= 65 && code <= 90) char = String.fromCharCode(((code - 65 + shift) % 26) + 65);
-      else if (code >= 97 && code <= 122) char = String.fromCharCode(((code - 97 + shift) % 26) + 97);
-    }
-    result += char;
-  }
-  return result;
-}
-
-function combineApiKey(parts) {
-  const dummyCharacters = "xy"; 
-  return parts.map(part => part + dummyCharacters).join('');
-}
-
-weatherWidget.retrieveWeatherApiData = function(cityName) {
-  var apiKeyPart1 = "f80779fb37";
-  var apiKeyPart2 = "3345eb8f19";
-  var apiKeyPart3 = "4813231707";
-  var keyShift = 3;
-  var apiKey = combineApiKey([apiKeyPart1, apiKeyPart2, apiKeyPart3]);
-  var encryptedApiKey = caesarCipherEncrypt(apiKey, keyShift);
-
-
-      fetch(`https://api.weatherapi.com/v1/forecast.json?key=${encryptedApiKey}&q=${cityName}}&days=1&aqi=yes&alerts=yes`)
-      .then(res => res.json())
-      .then(jsonResult => {
-        fetch(`https://api.weatherapi.com/v1/forecast.xml?key=${encryptedApiKey}&q=${cityName}&days=1&aqi=yes&alerts=yes`)
-          .then(res => res.text())
-          .then(xmlString => {
-            const cityName = document.getElementById('cityName');
-            weatherWidget.updateHistoricalDetails();
-            weatherWidget.updateCurrentDetails(jsonResult, xmlString);
-            
-          });
-      })
-      .catch(error => {
-        console.error('Error fetching weather data:', error);
-      });
+        let result = "";
+        for (let i = 0; i < text.length; i++) {
+            let char = text[i];
+            if (char.match(/[a-z]/i)) {
+                let code = text.charCodeAt(i);
+                if (code >= 65 && code <= 90)
+                    char = String.fromCharCode(((code - 65 + shift) % 26) + 65);
+                else if (code >= 97 && code <= 122)
+                    char = String.fromCharCode(((code - 97 + shift) % 26) + 97);
+            }
+            result += char;
+        }
+        return result;
     };
-   
-    weatherWidget.updateCurrentDetails = function(jsonResult, xmlString) {
-      const currentTemperatureC = jsonResult.current.temp_c;
-      const currentUV = jsonResult.current.uv;
-      weatherWidget.namedDomedElements.temperatureElement.innerText = `Temperature: ${currentTemperatureC}°C`;
-      weatherWidget.namedDomedElements.uvElement.innerText = `UV: ${currentUV}`;
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-      const astronomyElement = xmlDoc.querySelector('astro');
-      const currentSunrise = astronomyElement.querySelector('sunrise').textContent;
-      const currentSunset = astronomyElement.querySelector('sunset').textContent;
-      weatherWidget.namedDomedElements.sunriseElement.innerText = `Sunrise: ${currentSunrise}`;
-      weatherWidget.namedDomedElements.sunsetElement.innerText = `Sunset: ${currentSunset}`;      
-      localStorage.setItem('lastViewedTemperature', currentTemperatureC);
-      localStorage.setItem('lastViewedUV', currentUV);
-      localStorage.setItem('lastViewedSunrise', currentSunrise);
-      localStorage.setItem('lastViewedSunset', currentSunset);
-    }
-    
-    weatherWidget.updateHistoricalDetails = function() {
-      const lastViewedTemperature = localStorage.getItem('lastViewedTemperature');
-      if (lastViewedTemperature) {
-        document.getElementById('last-viewed-temperature').innerText = `Last Checked Temperature: ${lastViewedTemperature}°C`;
-      }
-      const lastViewedUV = localStorage.getItem('lastViewedUV');
-      if (lastViewedUV) {
-        document.getElementById('last-viewed-uv').innerText = `Last Checked UV: ${lastViewedUV}`;
-      }
-      const lastViewedSunrise = localStorage.getItem('lastViewedSunrise');
-      if (lastViewedSunrise) {
-        document.getElementById('last-viewed-sunrise').innerText = `Last Checked Sunrise: ${lastViewedSunrise}`;
-      }
-      const lastViewedSunset = localStorage.getItem('lastViewedSunset');
-      if (lastViewedSunset) {
-        document.getElementById('last-viewed-sunset').innerText = `Last Checked Sunset: ${lastViewedSunset}`;
-      }
-    }
-    
-    weatherWidget.displayWeatherData = function()
-    {
-      weatherWidget.init();
-      weatherWidget.retrieveWeatherApiData("London");
-    }
+
+    weatherWidget.combineKeyParts = function (parts) {
+        return parts.join('');
+    };
+
+    weatherWidget.retrieveWeatherApiData = function (cityName) {
+        var apiKeyParts = ["f80779fb37",
+			"3345eb8f19",
+			"4813231707"
+        ];
+        var keyShift = 3;
+        /*var decryptedApiKey = caesarCipherEncrypt(apiKey, keyShift);*/
+        var apiKey = weatherWidget.combineKeyParts(apiKeyParts);
+
+        fetch(`https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${cityName}}&days=1&aqi=yes&alerts=yes`)
+        .then(res => res.json())
+        .then(jsonResult => {
+            fetch(`https://api.weatherapi.com/v1/forecast.xml?key=${apiKey}&q=${cityName}&days=1&aqi=yes&alerts=yes`)
+            .then(res => res.text())
+            .then(xmlString => {
+                const cityNameHeader = document.getElementById('cityName');
+				cityNameHeader.innerText = cityName;
+                weatherWidget.updateHistoricalDetails();
+                weatherWidget.updateCurrentDetails(jsonResult, xmlString);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching weather data: ', error);
+            document.getElementById('cityName').innerHtml = '<span class="errorMsg">Unable to retrieve weather data from provider</span>';
+        });
+    };
+
+    weatherWidget.updateCurrentDetails = function (jsonResult, xmlString) {
+        const currentTemperatureC = jsonResult.current.temp_c;
+        const currentUV = jsonResult.current.uv;
+        weatherWidget.namedDomedElements.temperatureElement.innerText = `Temperature: ${currentTemperatureC}°C`;
+        weatherWidget.namedDomedElements.uvElement.innerText = `UV: ${currentUV}`;
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+        const astronomyElement = xmlDoc.querySelector('astro');
+        const currentSunrise = astronomyElement.querySelector('sunrise').textContent;
+        const currentSunset = astronomyElement.querySelector('sunset').textContent;
+        weatherWidget.namedDomedElements.sunriseElement.innerText = `Sunrise: ${currentSunrise}`;
+        weatherWidget.namedDomedElements.sunsetElement.innerText = `Sunset: ${currentSunset}`;
+        localStorage.setItem('lastViewedTemperature', currentTemperatureC);
+        localStorage.setItem('lastViewedUV', currentUV);
+        localStorage.setItem('lastViewedSunrise', currentSunrise);
+        localStorage.setItem('lastViewedSunset', currentSunset);
+    };
+
+    weatherWidget.updateHistoricalDetails = function () {
+        const lastViewedTemperature = localStorage.getItem('lastViewedTemperature');
+        if (lastViewedTemperature) {
+            document.getElementById('last-viewed-temperature').innerText = `Last Checked Temperature: ${lastViewedTemperature}°C`;
+        }
+        const lastViewedUV = localStorage.getItem('lastViewedUV');
+        if (lastViewedUV) {
+            document.getElementById('last-viewed-uv').innerText = `Last Checked UV: ${lastViewedUV}`;
+        }
+        const lastViewedSunrise = localStorage.getItem('lastViewedSunrise');
+        if (lastViewedSunrise) {
+            document.getElementById('last-viewed-sunrise').innerText = `Last Checked Sunrise: ${lastViewedSunrise}`;
+        }
+        const lastViewedSunset = localStorage.getItem('lastViewedSunset');
+        if (lastViewedSunset) {
+            document.getElementById('last-viewed-sunset').innerText = `Last Checked Sunset: ${lastViewedSunset}`;
+        }
+    };
+
+    weatherWidget.displayWeatherData = function () {
+        weatherWidget.init();
+        weatherWidget.retrieveWeatherApiData("London");
+    };
   </script>
 
 </body>
